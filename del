@@ -1,0 +1,378 @@
+import java.io.*;
+import java.time.LocalDate;
+import java.util.*;
+
+//Un enum TipOperatiune cu valorile CUMPARARE, VANZARE și o
+// metodă int directie() care să dea
+//directia operatiunii financiare (-1 VANZARE, 1 CUMPARARE).
+enum TipOperatiune{
+    VANZARE(-1),
+    CUMPARARE(1);
+    private final int directie;
+
+    TipOperatiune(int directie){
+        this.directie=directie;
+    }
+
+    public int getDirectie(){
+        return directie;
+    }
+}
+
+interface Evaluabil{
+    public double valoare();
+}
+
+//care sa implementeze interfata instrumente.Evaluabil
+//Clasa Instrument
+class Instrument implements Evaluabil, Serializable
+{
+    @Override
+    public double valoare() {
+        double valoare=0;
+        for(var operatiune: this.listaOperatiuni)
+        {
+            valoare+= operatiune.getPret()* operatiune.getCantitate();
+        }
+        return valoare;
+    }
+
+    //o clasă internă statică Operatiune (tip - TipOperatiune, data - LocalDate,
+    //preț - număr cu zecimale, cantitate - întreg).
+    static class Operatiune{
+    private final TipOperatiune tip;
+    private final LocalDate data;
+    private final float pret;
+    private final int cantitate;
+
+        public Operatiune(TipOperatiune tip, LocalDate data, float pret, int cantitate) {
+            this.tip = tip;
+            this.data = data;
+            this.pret = pret;
+            this.cantitate = cantitate;
+        }
+
+        public TipOperatiune getTip() { return tip; }
+
+        public LocalDate getData() { return data;}
+
+        public float getPret() {return pret;}
+
+        public int getCantitate() {return cantitate;}
+
+        @Override
+        public String toString() {
+//            aici a fost ce a returnat override toString
+            StringBuilder sir=new StringBuilder();
+            //String separator=",";
+            sir.append(this.getTip());sir.append(",");
+            //sir.append(this.getData());sir.append(",");   !!!
+            sir.append(this.getData().getYear());sir.append(",");
+            sir.append(this.getData().getMonthValue());sir.append(",");
+            sir.append(this.getData().getDayOfMonth());sir.append(",");
+            sir.append(this.getPret());sir.append(",");
+            sir.append(this.getCantitate());sir.append(",");
+            return sir.toString();
+        }
+    }
+    //symbol - String, o colectie de obiecte de tip Operatiune
+    private String symbol;
+    List<Operatiune> listaOperatiuni;
+//constructor fara para
+    public Instrument() {
+        this.symbol = "";
+        this.listaOperatiuni = new ArrayList<>();
+    }
+//cu para
+    public Instrument(String symbol, List<Operatiune> listaOperatiuni) {
+        this.symbol = symbol;
+        this.listaOperatiuni = listaOperatiuni;
+    }
+
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public List<Operatiune> getListaOperatiuni() {
+        return listaOperatiuni;
+    }
+// - posibilitatea de a adăuga operatiuni la un intrumentul financiar.
+    public void addOperatiune(Operatiune o){
+        listaOperatiuni.add(o);
+    }
+
+    @Override
+    public String toString() {
+//   a fost default
+        StringBuilder sir=new StringBuilder();
+        sir.append(this.getSymbol());sir.append(",");
+        //sir.append(this.getListaOperatiuni());sir
+        sir.append(this.valoare());sir.append(System.lineSeparator());
+        for(var operatiune: this.listaOperatiuni)
+        {
+            sir.append(operatiune);
+        }
+        sir.append(System.lineSeparator());
+        return sir.toString();
+    }
+}
+
+//O clasa Actiune, derivata din Intrumnet si care implementeaza interfata instrumente.Evaluabil.
+//Are in plus un atribut privat double - procentDividend.
+class Actiune extends Instrument implements Evaluabil, Serializable {
+    private double procentDivident;
+
+    @Override
+    public double valoare() {
+        return super.valoare()+super.valoare()*this.procentDivident/100;
+    }
+
+    public Actiune(String symbol, List<Operatiune> listaOperatiuni, double procentDivident) {
+        super(symbol, listaOperatiuni);
+        this.procentDivident = procentDivident;
+    }
+
+    public double getProcentDivident() {
+        return procentDivident;
+    }
+
+    @Override
+    public String toString() {
+//        return "Actiune{" +
+//                "procentDivident=" + procentDivident +
+//                '}';
+        StringBuilder sir=new StringBuilder();
+        sir.append(this.getSymbol());sir.append(",");
+        sir.append(this.valoare());sir.append(",");
+        sir.append(this.procentDivident);sir.append(System.lineSeparator());
+        for(var operatiune : this.listaOperatiuni)
+        {
+            sir.append(operatiune);
+        }
+        sir.append(System.lineSeparator());
+        return sir.toString();
+    }
+}
+
+//   O clasa  PortofoliuGenerics<T> ce implementeaza o colectie generica de intrumente financiare.
+//   Are un atribut privat portofoliu ce stocheaza colectia de obiecte <T> si contructori cu si fara parametri.
+//   Contine urmatoarele metode publice:
+//   getProtofoliu(),
+//   setPortofoliu(),
+//   adaugaIntrument(),
+//   getIntrument().
+class PortofoliuGenerics<T> implements Serializable{
+//   Are un atribut privat portofoliu ce stocheaza colectia de obiecte <T>
+//   si contructori cu si fara parametri.
+    public Map<String,T> portofoliu;
+
+    public PortofoliuGenerics() {
+        this.portofoliu = new HashMap<>();
+    }
+
+    public PortofoliuGenerics(Map<String, T> portofoliu) {
+        this.portofoliu = portofoliu;
+    }
+
+    public Map<String, T> getPortofoliu() {
+        return portofoliu;
+    }
+
+    public void setPortofoliu(Map<String, T> portofoliu) {
+        this.portofoliu = portofoliu;
+    }
+
+    public void addInstrument(String string,T instrument){
+        this.portofoliu.put(string,instrument);
+    }
+
+    public T getInstrument(String string){
+        return this.portofoliu.get(string);
+    }
+
+    public void afisarePortofoliu(){
+        for(var entry:this.portofoliu.entrySet())
+        {
+            System.out.println(entry.getValue().toString());
+        }
+    }
+}
+
+public class mainInstrumente {
+    static void toText(String caleFisier,PortofoliuGenerics<Instrument> portofoliu)
+            throws IOException
+    {
+        if(new File(caleFisier).getParentFile()!=null){
+            new File(caleFisier).getParentFile().mkdirs();
+        }
+        try(var fisierText =new PrintWriter(new BufferedWriter(new FileWriter(caleFisier)))){
+            for(var entry :portofoliu.getPortofoliu().entrySet())
+            {
+                fisierText.write(entry.getValue().toString());
+            }
+        }
+    }
+
+    static PortofoliuGenerics<Instrument> fromText(String caleFisier)
+        throws IOException
+    {
+        PortofoliuGenerics<Instrument> portofoliu=new PortofoliuGenerics<>();
+
+        try(var fisierScanner=new Scanner(new BufferedReader(new FileReader(caleFisier)))){
+            while(fisierScanner.hasNext()){
+                String linie=fisierScanner.nextLine();
+                Scanner linieScanner=new Scanner(linie);
+                linieScanner.useDelimiter("[\\,]+");
+                //citeste simbol
+                String simbol=linieScanner.next();
+                double valoare=Double.parseDouble(linieScanner.next());
+                double dividend=-1;
+                if(linieScanner.hasNextDouble()){
+                    dividend=Double.parseDouble(linieScanner.next());
+                }
+                //citeste lista de operatiuni
+                String linie2=fisierScanner.nextLine();
+                linieScanner=new Scanner(linie2);
+                linieScanner.useDelimiter("[\\,]+");
+                List<Instrument.Operatiune> operatiuni=new ArrayList<>();
+                while(linieScanner.hasNext())
+                {
+                    TipOperatiune tip=TipOperatiune.valueOf(linieScanner.next());
+                    LocalDate data=LocalDate.of(linieScanner.nextInt(),linieScanner.nextInt(),linieScanner.nextInt());
+                    float pret=Float.parseFloat(linieScanner.next());
+                    int cantitate=linieScanner.nextInt();
+                    Instrument.Operatiune op=new Instrument.Operatiune(tip,data,pret,cantitate);
+                    operatiuni.add(op);
+                }
+                if(dividend>0)
+                {
+                    //avem o actiune
+                    Actiune actiune=new Actiune(simbol,operatiuni,dividend);
+                    portofoliu.addInstrument(simbol,actiune);
+                }
+                else{
+                    Instrument instrument=new Instrument(simbol,operatiuni);
+                    portofoliu.addInstrument(simbol,instrument);
+                }
+            }
+        }
+        return portofoliu;
+    }
+
+    static void toBinar(String cF,PortofoliuGenerics<Instrument> portofoliu)
+        throws IOException
+    {
+        if(new File(cF).getParentFile()!=null){
+            new File(cF).getParentFile().mkdirs();
+        }
+        try(var fBinar=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(cF))))
+        {
+            for(var entry : portofoliu.getPortofoliu().entrySet())
+            {
+                if(entry.getValue() instanceof Actiune){
+                    fBinar.writeInt(2);
+                    fBinar.writeUTF(entry.getKey());
+                    fBinar.writeDouble(((Actiune)entry.getValue()).getProcentDivident());
+                } else if (entry.getValue() instanceof Instrument){
+                    fBinar.writeInt(1);
+                    fBinar.writeUTF(entry.getKey());
+                }
+                //scriem nr elemente din lista de op
+                fBinar.writeInt(entry.getValue().getListaOperatiuni().size());
+                for(var operatiune: entry.getValue().getListaOperatiuni())
+                {
+                    fBinar.writeUTF(operatiune.getTip().toString());
+                    fBinar.writeInt(operatiune.getData().getYear());
+                    fBinar.writeInt(operatiune.getData().getMonthValue());
+                    fBinar.writeInt(operatiune.getData().getDayOfMonth());
+                    fBinar.writeFloat(operatiune.getPret());
+                    fBinar.writeInt(operatiune.getCantitate());
+                }
+            }
+        }
+    }
+
+    static PortofoliuGenerics<Instrument> fromBinar(String cF)
+        throws IOException
+    {
+        PortofoliuGenerics<Instrument> p=new PortofoliuGenerics<>();
+
+        try(var fBinar=new DataInputStream(new BufferedInputStream(new FileInputStream(cF))))
+        {
+            while(true){
+                try{
+                    int isInstrument=fBinar.readInt();
+                    String simbol=fBinar.readUTF();
+                    //double valoare=fBinar.readDouble();
+                    double procentDivident=-1;
+                    if(isInstrument==2){
+                        procentDivident=fBinar.readDouble();
+                    }
+                    List<Instrument.Operatiune> listaOperatiuni=new ArrayList<>();
+                    int nrOp=fBinar.readInt();
+                    for(int i=0;i<nrOp;i++){
+                        Instrument.Operatiune op=new Instrument.Operatiune(TipOperatiune.valueOf(fBinar.readUTF()),
+                                LocalDate.of(fBinar.readInt(),fBinar.readInt(),fBinar.readInt()),
+                                fBinar.readFloat(),fBinar.readInt());
+                        listaOperatiuni.add(op);
+                    }
+                    if(procentDivident<0){
+                        Instrument i=new Instrument(simbol,listaOperatiuni);
+                        p.addInstrument(simbol,i);
+                    }
+                    else{
+                        Actiune a=new Actiune(simbol,listaOperatiuni,procentDivident);
+                        p.addInstrument(simbol,a);
+                    }
+                }
+                catch(EOFException e){
+                    break;
+                }
+            }
+        }
+        return p;
+    }
+
+    static void main(String[] args) throws IOException
+    {
+        PortofoliuGenerics<Instrument> p=new PortofoliuGenerics<>();
+    Instrument.Operatiune o1=new Instrument.Operatiune(TipOperatiune.CUMPARARE,
+            LocalDate.of(2025,12,21),1.2f,100);
+    Instrument.Operatiune o2 = new Instrument.Operatiune(TipOperatiune.VANZARE,
+            LocalDate.of(2025,12,21),1.4f, 50);
+    Instrument.Operatiune o3 = new Instrument.Operatiune(TipOperatiune.CUMPARARE,
+            LocalDate.of(2025,12,22),1.3f, 70);
+
+    List<Instrument.Operatiune> listOp=new ArrayList<>();
+    Collections.addAll(listOp,o1,o2,o3);
+    Instrument i=new Instrument("BRD",listOp);
+    Actiune a=new Actiune("TLV",listOp,3.5);
+
+    System.out.println(i);
+    System.out.println(a);
+    System.out.println("Val BRD="+i.valoare());
+    System.out.println("Val TVL="+a.valoare());
+
+    p.addInstrument(i.getSymbol(),i);
+    p.addInstrument(a.getSymbol(),a);
+
+    //to text
+    toText("./dataOut/instrumente.txt",p);
+
+    //from txt
+    PortofoliuGenerics<Instrument> p1=new PortofoliuGenerics<>();
+    p1=fromText("./dataOut/instrumente.txt");
+    System.out.println();
+    p1.afisarePortofoliu();
+
+    //to bin
+        toBinar("./dataOut/instrumente.dat",p);
+
+    //from bin
+    PortofoliuGenerics<Instrument> pBin=new PortofoliuGenerics<>();
+    pBin=fromBinar("./dataOut/instrumente.dat");
+    System.out.println();
+    pBin.afisarePortofoliu();
+
+    }
+}
