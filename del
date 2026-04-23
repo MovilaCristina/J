@@ -2,9 +2,6 @@ import java.io.*;
 import java.time.LocalDate;
 import java.util.*;
 
-//Un enum TipOperatiune cu valorile CUMPARARE, VANZARE și o
-// metodă int directie() care să dea
-//directia operatiunii financiare (-1 VANZARE, 1 CUMPARARE).
 enum TipOperatiune{
     VANZARE(-1),
     CUMPARARE(1);
@@ -23,8 +20,6 @@ interface Evaluabil{
     public double valoare();
 }
 
-//care sa implementeze interfata instrumente.Evaluabil
-//Clasa Instrument
 class Instrument implements Evaluabil, Serializable
 {
     @Override
@@ -37,8 +32,6 @@ class Instrument implements Evaluabil, Serializable
         return valoare;
     }
 
-    //o clasă internă statică Operatiune (tip - TipOperatiune, data - LocalDate,
-    //preț - număr cu zecimale, cantitate - întreg).
     static class Operatiune{
     private final TipOperatiune tip;
     private final LocalDate data;
@@ -62,7 +55,6 @@ class Instrument implements Evaluabil, Serializable
 
         @Override
         public String toString() {
-//            aici a fost ce a returnat override toString
             StringBuilder sir=new StringBuilder();
             //String separator=",";
             sir.append(this.getTip());sir.append(",");
@@ -78,12 +70,12 @@ class Instrument implements Evaluabil, Serializable
     //symbol - String, o colectie de obiecte de tip Operatiune
     private String symbol;
     List<Operatiune> listaOperatiuni;
-//constructor fara para
+
     public Instrument() {
         this.symbol = "";
         this.listaOperatiuni = new ArrayList<>();
     }
-//cu para
+
     public Instrument(String symbol, List<Operatiune> listaOperatiuni) {
         this.symbol = symbol;
         this.listaOperatiuni = listaOperatiuni;
@@ -96,14 +88,13 @@ class Instrument implements Evaluabil, Serializable
     public List<Operatiune> getListaOperatiuni() {
         return listaOperatiuni;
     }
-// - posibilitatea de a adăuga operatiuni la un intrumentul financiar.
+
     public void addOperatiune(Operatiune o){
         listaOperatiuni.add(o);
     }
 
     @Override
     public String toString() {
-//   a fost default
         StringBuilder sir=new StringBuilder();
         sir.append(this.getSymbol());sir.append(",");
         //sir.append(this.getListaOperatiuni());sir
@@ -117,8 +108,6 @@ class Instrument implements Evaluabil, Serializable
     }
 }
 
-//O clasa Actiune, derivata din Intrumnet si care implementeaza interfata instrumente.Evaluabil.
-//Are in plus un atribut privat double - procentDividend.
 class Actiune extends Instrument implements Evaluabil, Serializable {
     private double procentDivident;
 
@@ -138,9 +127,7 @@ class Actiune extends Instrument implements Evaluabil, Serializable {
 
     @Override
     public String toString() {
-//        return "Actiune{" +
-//                "procentDivident=" + procentDivident +
-//                '}';
+
         StringBuilder sir=new StringBuilder();
         sir.append(this.getSymbol());sir.append(",");
         sir.append(this.valoare());sir.append(",");
@@ -154,16 +141,8 @@ class Actiune extends Instrument implements Evaluabil, Serializable {
     }
 }
 
-//   O clasa  PortofoliuGenerics<T> ce implementeaza o colectie generica de intrumente financiare.
-//   Are un atribut privat portofoliu ce stocheaza colectia de obiecte <T> si contructori cu si fara parametri.
-//   Contine urmatoarele metode publice:
-//   getProtofoliu(),
-//   setPortofoliu(),
-//   adaugaIntrument(),
-//   getIntrument().
 class PortofoliuGenerics<T> implements Serializable{
-//   Are un atribut privat portofoliu ce stocheaza colectia de obiecte <T>
-//   si contructori cu si fara parametri.
+
     public Map<String,T> portofoliu;
 
     public PortofoliuGenerics() {
@@ -373,6 +352,5 @@ public class mainInstrumente {
     pBin=fromBinar("./dataOut/instrumente.dat");
     System.out.println();
     pBin.afisarePortofoliu();
-
     }
 }
