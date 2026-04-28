@@ -1,356 +1,165 @@
-import java.io.*;
-import java.time.LocalDate;
-import java.util.*;
-
-enum TipOperatiune{
-    VANZARE(-1),
-    CUMPARARE(1);
-    private final int directie;
-
-    TipOperatiune(int directie){
-        this.directie=directie;
-    }
-
-    public int getDirectie(){
-        return directie;
-    }
-}
-
-interface Evaluabil{
-    public double valoare();
-}
-
-class Instrument implements Evaluabil, Serializable
+public override string ToString()
 {
-    @Override
-    public double valoare() {
-        double valoare=0;
-        for(var operatiune: this.listaOperatiuni)
-        {
-            valoare+= operatiune.getPret()* operatiune.getCantitate();
-        }
-        return valoare;
+    string lMaterii = string.Join(", ", materii);
+    return $"{base.ToString()} | {Facultate} | {Matricol} | {Medie} | [{lMaterii}]";
+}
+
+//OPERATOR +
+public static Student operator +(Student s, string materie)
+{
+    if(s.materii==null)
+    {
+        s.materii = new List<string>();
     }
+    s.materii.Add(materie);
+    return s;
+}
 
-    static class Operatiune{
-    private final TipOperatiune tip;
-    private final LocalDate data;
-    private final float pret;
-    private final int cantitate;
-
-        public Operatiune(TipOperatiune tip, LocalDate data, float pret, int cantitate) {
-            this.tip = tip;
-            this.data = data;
-            this.pret = pret;
-            this.cantitate = cantitate;
-        }
-
-        public TipOperatiune getTip() { return tip; }
-
-        public LocalDate getData() { return data;}
-
-        public float getPret() {return pret;}
-
-        public int getCantitate() {return cantitate;}
-
-        @Override
-        public String toString() {
-            StringBuilder sir=new StringBuilder();
-            //String separator=",";
-            sir.append(this.getTip());sir.append(",");
-            //sir.append(this.getData());sir.append(",");   !!!
-            sir.append(this.getData().getYear());sir.append(",");
-            sir.append(this.getData().getMonthValue());sir.append(",");
-            sir.append(this.getData().getDayOfMonth());sir.append(",");
-            sir.append(this.getPret());sir.append(",");
-            sir.append(this.getCantitate());sir.append(",");
-            return sir.toString();
-        }
-    }
-    //symbol - String, o colectie de obiecte de tip Operatiune
-    private String symbol;
-    List<Operatiune> listaOperatiuni;
-
-    public Instrument() {
-        this.symbol = "";
-        this.listaOperatiuni = new ArrayList<>();
-    }
-
-    public Instrument(String symbol, List<Operatiune> listaOperatiuni) {
-        this.symbol = symbol;
-        this.listaOperatiuni = listaOperatiuni;
-    }
-
-    public String getSymbol() {
-        return symbol;
-    }
-
-    public List<Operatiune> getListaOperatiuni() {
-        return listaOperatiuni;
-    }
-
-    public void addOperatiune(Operatiune o){
-        listaOperatiuni.add(o);
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sir=new StringBuilder();
-        sir.append(this.getSymbol());sir.append(",");
-        //sir.append(this.getListaOperatiuni());sir
-        sir.append(this.valoare());sir.append(System.lineSeparator());
-        for(var operatiune: this.listaOperatiuni)
-        {
-            sir.append(operatiune);
-        }
-        sir.append(System.lineSeparator());
-        return sir.toString();
+//OPERATOR INDEX
+public string this[int index]
+{
+    get
+    {
+        if (index >= 0 && index < materii.Count)
+            return materii[index];
+        else
+            return "Index invalid";
     }
 }
 
-class Actiune extends Instrument implements Evaluabil, Serializable {
-    private double procentDivident;
+//in tree
+private void btAfisare_Click(object sender, EventArgs e)
+{
+    tvStudenti.Nodes.Clear();
 
-    @Override
-    public double valoare() {
-        return super.valoare()+super.valoare()*this.procentDivident/100;
-    }
+    TreeNode parinte = new TreeNode("Studenti");
+    tvStudenti.Nodes.Add(parinte);
 
-    public Actiune(String symbol, List<Operatiune> listaOperatiuni, double procentDivident) {
-        super(symbol, listaOperatiuni);
-        this.procentDivident = procentDivident;
-    }
+    foreach(Student s in studenti)
+    { 
+        TreeNode copil = new TreeNode(s.Matricol);
+        copil.Nodes.Add(s.Nume + "-" + s.Facultate + "-" + s.Medie);
 
-    public double getProcentDivident() {
-        return procentDivident;
-    }
+        TreeNode m=new TreeNode("Materii");
 
-    @Override
-    public String toString() {
-
-        StringBuilder sir=new StringBuilder();
-        sir.append(this.getSymbol());sir.append(",");
-        sir.append(this.valoare());sir.append(",");
-        sir.append(this.procentDivident);sir.append(System.lineSeparator());
-        for(var operatiune : this.listaOperatiuni)
+        foreach(string materie in s.Materii)
         {
-            sir.append(operatiune);
+            m.Nodes.Add(materie);
         }
-        sir.append(System.lineSeparator());
-        return sir.toString();
+        copil.Nodes.Add(m);
+        parinte.Nodes.Add(copil);
+    }
+    tvStudenti.ExpandAll();
+}
+
+//COMPARABLE<>
+internal class Carte:Librarie,IComparable<Carte>
+{
+	public int CompareTo(Carte other)
+	{
+		if (other == null) return 1;
+
+		if (this.pret < other.pret) return 1;
+		if (this.pret > other.pret) return -1;
+		return 0;
+	}
+}
+
+//Afis boxText
+private void btAfiseazaCarti_Click(object sender, EventArgs e)
+{
+    tbBooks.Clear();
+    foreach(Carte c in carti)
+    {
+        tbBooks.Text += c.ToString() + Environment.NewLine;
     }
 }
 
-class PortofoliuGenerics<T> implements Serializable{
-
-    public Map<String,T> portofoliu;
-
-    public PortofoliuGenerics() {
-        this.portofoliu = new HashMap<>();
-    }
-
-    public PortofoliuGenerics(Map<String, T> portofoliu) {
-        this.portofoliu = portofoliu;
-    }
-
-    public Map<String, T> getPortofoliu() {
-        return portofoliu;
-    }
-
-    public void setPortofoliu(Map<String, T> portofoliu) {
-        this.portofoliu = portofoliu;
-    }
-
-    public void addInstrument(String string,T instrument){
-        this.portofoliu.put(string,instrument);
-    }
-
-    public T getInstrument(String string){
-        return this.portofoliu.get(string);
-    }
-
-    public void afisarePortofoliu(){
-        for(var entry:this.portofoliu.entrySet())
-        {
-            System.out.println(entry.getValue().toString());
-        }
+//Afis listView
+private void btAfiseazaList_Click(object sender, EventArgs e)
+{
+    lvBooks.Items.Clear();
+    foreach(Carte c in carti)
+    {
+        ListViewItem lvi = new ListViewItem(c.Denumire);
+        lvi.SubItems.Add(c.Cod);
+        lvi.SubItems.Add(c.Titlu);
+        lvi.SubItems.Add(c.Autor);
+        lvi.SubItems.Add(c.Pret.ToString());
+        lvBooks.Items.Add(lvi);
     }
 }
 
-public class mainInstrumente {
-    static void toText(String caleFisier,PortofoliuGenerics<Instrument> portofoliu)
-            throws IOException
-    {
-        if(new File(caleFisier).getParentFile()!=null){
-            new File(caleFisier).getParentFile().mkdirs();
-        }
-        try(var fisierText =new PrintWriter(new BufferedWriter(new FileWriter(caleFisier)))){
-            for(var entry :portofoliu.getPortofoliu().entrySet())
-            {
-                fisierText.write(entry.getValue().toString());
-            }
-        }
-    }
+//Stergere din listview
+...()
+{
+	foreach(ListViewItem i in lvStd.Items)
+		if(i.Checked)
+			i.Remove();
+}
 
-    static PortofoliuGenerics<Instrument> fromText(String caleFisier)
-        throws IOException
+//[SERIALIZABLE]
+private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+{
+    saveFileDialog1.Filter = "(*.txt)|*.txt";
+    if (saveFileDialog1.ShowDialog() == DialogResult.OK)
     {
-        PortofoliuGenerics<Instrument> portofoliu=new PortofoliuGenerics<>();
-
-        try(var fisierScanner=new Scanner(new BufferedReader(new FileReader(caleFisier)))){
-            while(fisierScanner.hasNext()){
-                String linie=fisierScanner.nextLine();
-                Scanner linieScanner=new Scanner(linie);
-                linieScanner.useDelimiter("[\\,]+");
-                //citeste simbol
-                String simbol=linieScanner.next();
-                double valoare=Double.parseDouble(linieScanner.next());
-                double dividend=-1;
-                if(linieScanner.hasNextDouble()){
-                    dividend=Double.parseDouble(linieScanner.next());
-                }
-                //citeste lista de operatiuni
-                String linie2=fisierScanner.nextLine();
-                linieScanner=new Scanner(linie2);
-                linieScanner.useDelimiter("[\\,]+");
-                List<Instrument.Operatiune> operatiuni=new ArrayList<>();
-                while(linieScanner.hasNext())
-                {
-                    TipOperatiune tip=TipOperatiune.valueOf(linieScanner.next());
-                    LocalDate data=LocalDate.of(linieScanner.nextInt(),linieScanner.nextInt(),linieScanner.nextInt());
-                    float pret=Float.parseFloat(linieScanner.next());
-                    int cantitate=linieScanner.nextInt();
-                    Instrument.Operatiune op=new Instrument.Operatiune(tip,data,pret,cantitate);
-                    operatiuni.add(op);
-                }
-                if(dividend>0)
-                {
-                    //avem o actiune
-                    Actiune actiune=new Actiune(simbol,operatiuni,dividend);
-                    portofoliu.addInstrument(simbol,actiune);
-                }
-                else{
-                    Instrument instrument=new Instrument(simbol,operatiuni);
-                    portofoliu.addInstrument(simbol,instrument);
-                }
-            }
-        }
-        return portofoliu;
-    }
-
-    static void toBinar(String cF,PortofoliuGenerics<Instrument> portofoliu)
-        throws IOException
-    {
-        if(new File(cF).getParentFile()!=null){
-            new File(cF).getParentFile().mkdirs();
-        }
-        try(var fBinar=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(cF))))
+        StreamWriter sw = new StreamWriter(saveFileDialog1.FileName);
+        foreach (Student s in students)
         {
-            for(var entry : portofoliu.getPortofoliu().entrySet())
-            {
-                if(entry.getValue() instanceof Actiune){
-                    fBinar.writeInt(2);
-                    fBinar.writeUTF(entry.getKey());
-                    fBinar.writeDouble(((Actiune)entry.getValue()).getProcentDivident());
-                } else if (entry.getValue() instanceof Instrument){
-                    fBinar.writeInt(1);
-                    fBinar.writeUTF(entry.getKey());
-                }
-                //scriem nr elemente din lista de op
-                fBinar.writeInt(entry.getValue().getListaOperatiuni().size());
-                for(var operatiune: entry.getValue().getListaOperatiuni())
-                {
-                    fBinar.writeUTF(operatiune.getTip().toString());
-                    fBinar.writeInt(operatiune.getData().getYear());
-                    fBinar.writeInt(operatiune.getData().getMonthValue());
-                    fBinar.writeInt(operatiune.getData().getDayOfMonth());
-                    fBinar.writeFloat(operatiune.getPret());
-                    fBinar.writeInt(operatiune.getCantitate());
-                }
-            }
+            sw.WriteLine(s.ToString());
         }
+        sw.Close();
+        MessageBox.Show($"S-a salvat fisierul {saveFileDialog1.FileName}");
     }
+}
 
-    static PortofoliuGenerics<Instrument> fromBinar(String cF)
-        throws IOException
+private void openToolStripMenuItem_Click(object sender, EventArgs e)
+{
+    openFileDialog1.Filter = "(*.txt)|*.txt";
+    if (openFileDialog1.ShowDialog() == DialogResult.OK)
     {
-        PortofoliuGenerics<Instrument> p=new PortofoliuGenerics<>();
-
-        try(var fBinar=new DataInputStream(new BufferedInputStream(new FileInputStream(cF))))
-        {
-            while(true){
-                try{
-                    int isInstrument=fBinar.readInt();
-                    String simbol=fBinar.readUTF();
-                    //double valoare=fBinar.readDouble();
-                    double procentDivident=-1;
-                    if(isInstrument==2){
-                        procentDivident=fBinar.readDouble();
-                    }
-                    List<Instrument.Operatiune> listaOperatiuni=new ArrayList<>();
-                    int nrOp=fBinar.readInt();
-                    for(int i=0;i<nrOp;i++){
-                        Instrument.Operatiune op=new Instrument.Operatiune(TipOperatiune.valueOf(fBinar.readUTF()),
-                                LocalDate.of(fBinar.readInt(),fBinar.readInt(),fBinar.readInt()),
-                                fBinar.readFloat(),fBinar.readInt());
-                        listaOperatiuni.add(op);
-                    }
-                    if(procentDivident<0){
-                        Instrument i=new Instrument(simbol,listaOperatiuni);
-                        p.addInstrument(simbol,i);
-                    }
-                    else{
-                        Actiune a=new Actiune(simbol,listaOperatiuni,procentDivident);
-                        p.addInstrument(simbol,a);
-                    }
-                }
-                catch(EOFException e){
-                    break;
-                }
-            }
-        }
-        return p;
+        StreamReader sr = new StreamReader(openFileDialog1.FileName);
+        //tbStudenti.Text += sr.ReadToEnd();
+        //sr.Close();
+	string linie;
+	while((linie=sr.ReadToEnd())!=null)
+	{
+		try
+		{
+			string a=linie.Split(',')[0];
+			int b=Conver.ToInt32(linie.Split(',')[1]);
+			float c=float.Parse(linie.Split(',')[2],
+			   CultureInfo.InvariantCulture.NumberFormat);
+			Stud s=new Stud(a,b,c);
+			listStud.Add(s);
+		}catch(Exception ex)
+		{
+			MessageBox.Show(ex.Messege);
+		}
+	}
+	sr.Close();
     }
+}
 
-    static void main(String[] args) throws IOException
+private void saveToolStripMenuItem1_Click(object sender, EventArgs e)
+{
+    FileStream fs = new FileStream("studenti.dat", FileMode.Create, FileAccess.Write);
+    BinaryFormatter bf = new BinaryFormatter();
+    bf.Serialize(fs, students);
+    fs.Close();
+    MessageBox.Show("S-a salvat fisierul studenti.dat");
+}
+
+private void openToolStripMenuItem1_Click(object sender, EventArgs e)
+{
+    FileStream fs = new FileStream("studenti.dat", FileMode.Open, FileAccess.Read);
+    BinaryFormatter bf = new BinaryFormatter();
+    List<Student> studentiDeserializati = (List<Student>)bf.Deserialize(fs);
+    foreach (Student s in studentiDeserializati)
     {
-        PortofoliuGenerics<Instrument> p=new PortofoliuGenerics<>();
-    Instrument.Operatiune o1=new Instrument.Operatiune(TipOperatiune.CUMPARARE,
-            LocalDate.of(2025,12,21),1.2f,100);
-    Instrument.Operatiune o2 = new Instrument.Operatiune(TipOperatiune.VANZARE,
-            LocalDate.of(2025,12,21),1.4f, 50);
-    Instrument.Operatiune o3 = new Instrument.Operatiune(TipOperatiune.CUMPARARE,
-            LocalDate.of(2025,12,22),1.3f, 70);
-
-    List<Instrument.Operatiune> listOp=new ArrayList<>();
-    Collections.addAll(listOp,o1,o2,o3);
-    Instrument i=new Instrument("BRD",listOp);
-    Actiune a=new Actiune("TLV",listOp,3.5);
-
-    System.out.println(i);
-    System.out.println(a);
-    System.out.println("Val BRD="+i.valoare());
-    System.out.println("Val TVL="+a.valoare());
-
-    p.addInstrument(i.getSymbol(),i);
-    p.addInstrument(a.getSymbol(),a);
-
-    //to text
-    toText("./dataOut/instrumente.txt",p);
-
-    //from txt
-    PortofoliuGenerics<Instrument> p1=new PortofoliuGenerics<>();
-    p1=fromText("./dataOut/instrumente.txt");
-    System.out.println();
-    p1.afisarePortofoliu();
-
-    //to bin
-        toBinar("./dataOut/instrumente.dat",p);
-
-    //from bin
-    PortofoliuGenerics<Instrument> pBin=new PortofoliuGenerics<>();
-    pBin=fromBinar("./dataOut/instrumente.dat");
-    System.out.println();
-    pBin.afisarePortofoliu();
+        tbStudenti.Text += s.ToString() + "\n";
     }
+    fs.Close();
+    MessageBox.Show("S-a citit fisierul studenti.dat");
 }
